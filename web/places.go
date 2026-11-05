@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -26,6 +27,18 @@ type Place struct {
 	Phone        string  `json:"phone"`
 	Website      string  `json:"website"`
 	ReviewRating float64 `json:"review_rating"`
+	ReviewCount  int     `json:"review_count"`
+	Emails       string  `json:"emails"`
+	Status       string  `json:"status"`
+	Borough      string  `json:"borough"`
+	City         string  `json:"city"`
+	State        string  `json:"state"`
+}
+
+type completeAddress struct {
+	Borough string `json:"borough"`
+	City    string `json:"city"`
+	State   string `json:"state"`
 }
 
 // GetPlaces locates the job's CSV output and parses it into mappable places.
@@ -119,6 +132,14 @@ func parsePlaces(r io.Reader) ([]Place, error) {
 			rating = 0
 		}
 
+		reviewCount, _ := strconv.ParseFloat(get(row, "review_count"), 64)
+		if !finite(reviewCount) || reviewCount < 0 {
+			reviewCount = 0
+		}
+
+		var addr completeAddress
+		_ = json.Unmarshal([]byte(get(row, "complete_address")), &addr)
+
 		places = append(places, Place{
 			Title:        get(row, "title"),
 			Address:      get(row, "address"),
@@ -129,6 +150,12 @@ func parsePlaces(r io.Reader) ([]Place, error) {
 			Phone:        get(row, "phone"),
 			Website:      get(row, "website"),
 			ReviewRating: rating,
+			ReviewCount:  int(reviewCount),
+			Emails:       get(row, "emails"),
+			Status:       get(row, "status"),
+			Borough:      addr.Borough,
+			City:         addr.City,
+			State:        addr.State,
 		})
 	}
 

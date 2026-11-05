@@ -129,6 +129,18 @@ func New(svc *Service, addr string) (*Server, error) {
 		ans.download(w, r)
 	})
 
+	mux.HandleFunc("/api/v1/jobs/{id}/places", func(w http.ResponseWriter, r *http.Request) {
+		r = requestWithID(r)
+
+		if r.Method != http.MethodGet {
+			renderJSON(w, http.StatusMethodNotAllowed, apiError{Code: http.StatusMethodNotAllowed, Message: methodNotAllowedMessage})
+
+			return
+		}
+
+		ans.apiGetPlaces(w, r)
+	})
+
 	handler := securityHeaders(mux)
 	ans.srv.Handler = handler
 
@@ -659,6 +671,30 @@ func (s *Server) viewJob(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, _ = buf.WriteTo(w)
+}
+
+func (s *Server) apiGetPlaces(w http.ResponseWriter, r *http.Request) {
+	id, ok := getIDFromRequest(r)
+	if !ok {
+		renderJSON(w, http.StatusUnprocessableEntity, apiError{Code: http.StatusUnprocessableEntity, Message: "Invalid ID"})
+
+		return
+	}
+
+	places, err := s.svc.GetPlaces(r.Context(), id.String())
+	if err != nil {
+		if errors.Is(err, ErrPlacesNotFound) {
+			renderJSON(w, http.StatusOK, []Place{})
+
+			return
+		}
+
+		renderJSON(w, http.StatusInternalServerError, apiError{Code: http.StatusInternalServerError, Message: "internal server error"})
+
+		return
+	}
+
+	renderJSON(w, http.StatusOK, places)
 }
 
 func (s *Server) apiDeleteJob(w http.ResponseWriter, r *http.Request) {

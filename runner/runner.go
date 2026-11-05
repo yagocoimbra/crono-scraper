@@ -251,9 +251,8 @@ var (
 
 func Telemetry() tlmt.Telemetry {
 	telemetryOnce.Do(func() {
-		disableTel := func() bool {
-			return os.Getenv("DISABLE_TELEMETRY") == "1"
-		}()
+		// Crono Scraper: telemetry (PostHog + public IP lookup) is opt-in, never on by default.
+		disableTel := os.Getenv("ENABLE_TELEMETRY") != "1"
 
 		if disableTel {
 			telemetry = gonoop.New()

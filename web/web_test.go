@@ -176,7 +176,7 @@ func TestGetJobsHTMXTriggerIsPollingOnly(t *testing.T) {
 	}
 }
 
-func TestIndexScrapeFormReplacesPaginatedJobs(t *testing.T) {
+func TestIndexRendersCronoUI(t *testing.T) {
 	srv := newTestServer(t, t.TempDir())
 
 	req := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
@@ -184,12 +184,51 @@ func TestIndexScrapeFormReplacesPaginatedJobs(t *testing.T) {
 	srv.index(rec, req)
 
 	body := rec.Body.String()
-	if !strings.Contains(body, `hx-target="#job-tbody"`) {
-		t.Fatal("scrape form must target the paginated job body")
+	for _, want := range []string{`lang="pt-BR"`, `/static/js/crono.js`, `id="a-cronolead"`} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("index missing %q", want)
+		}
+	}
+}
+
+func TestAPIGetPlacesReturnsLeadFields(t *testing.T) {
+	dir := t.TempDir()
+	id := "33333333-3333-3333-3333-333333333333"
+
+	csv := "title,latitude,longitude,phone,review_count,review_rating,emails,complete_address\n" +
+		`Marcenaria X,-23.5,-46.6,(11) 98765-4321,83,4.9,a@x.com,"{""borough"":""Mooca"",""city"":""São Paulo"",""state"":""SP""}"` + "\n"
+	if err := os.WriteFile(filepath.Join(dir, id+".csv"), []byte(csv), 0o600); err != nil {
+		t.Fatalf("write csv: %v", err)
 	}
 
-	if !strings.Contains(body, `hx-swap="outerHTML"`) {
-		t.Fatal("scrape form must replace the paginated job body")
+	srv := newTestServer(t, dir)
+
+	req := requestWithID(httptest.NewRequest(http.MethodGet, "/api/v1/jobs/"+id+"/places?id="+id, http.NoBody))
+	rec := httptest.NewRecorder()
+	srv.apiGetPlaces(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
+	}
+
+	body := rec.Body.String()
+	for _, want := range []string{`"review_count":83`, `"emails":"a@x.com"`, `"borough":"Mooca"`, `"city":"São Paulo"`, `"state":"SP"`} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("body missing %q:\n%s", want, body)
+		}
+	}
+}
+
+func TestAPIGetPlacesEmptyWhenNoCSV(t *testing.T) {
+	srv := newTestServer(t, t.TempDir())
+
+	id := "44444444-4444-4444-4444-444444444444"
+	req := requestWithID(httptest.NewRequest(http.MethodGet, "/api/v1/jobs/"+id+"/places?id="+id, http.NoBody))
+	rec := httptest.NewRecorder()
+	srv.apiGetPlaces(rec, req)
+
+	if rec.Code != http.StatusOK || strings.TrimSpace(rec.Body.String()) != "[]" {
+		t.Fatalf("expected 200 [], got %d %s", rec.Code, rec.Body.String())
 	}
 }
 
