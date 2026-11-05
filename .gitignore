@@ -8,3 +8,4 @@ examples/examples-api/**/*.py[cod]
 gmaps-output
 crono-scraper
 crono-scraper.exe
+!third_party/scrapemate/adapters/cache/
