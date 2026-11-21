@@ -26,6 +26,7 @@ var static embed.FS
 const (
 	jobsPageLimit           = 20
 	methodNotAllowedMessage = "Method not allowed"
+	invalidIDMessage        = "Invalid ID"
 )
 
 type Server struct {
@@ -445,7 +446,7 @@ func (s *Server) download(w http.ResponseWriter, r *http.Request) {
 
 	id, ok := getIDFromRequest(r)
 	if !ok {
-		http.Error(w, "Invalid ID", http.StatusUnprocessableEntity)
+		http.Error(w, invalidIDMessage, http.StatusUnprocessableEntity)
 
 		return
 	}
@@ -483,7 +484,7 @@ func (s *Server) delete(w http.ResponseWriter, r *http.Request) {
 
 	deleteID, ok := getIDFromRequest(r)
 	if !ok {
-		http.Error(w, "Invalid ID", http.StatusUnprocessableEntity)
+		http.Error(w, invalidIDMessage, http.StatusUnprocessableEntity)
 
 		return
 	}
@@ -603,7 +604,7 @@ func (s *Server) apiGetJob(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		apiError := apiError{
 			Code:    http.StatusUnprocessableEntity,
-			Message: "Invalid ID",
+			Message: invalidIDMessage,
 		}
 
 		renderJSON(w, http.StatusUnprocessableEntity, apiError)
@@ -637,7 +638,7 @@ func (s *Server) viewJob(w http.ResponseWriter, r *http.Request) {
 
 	id, ok := getIDFromRequest(r)
 	if !ok {
-		http.Error(w, "Invalid ID", http.StatusUnprocessableEntity)
+		http.Error(w, invalidIDMessage, http.StatusUnprocessableEntity)
 
 		return
 	}
@@ -676,7 +677,7 @@ func (s *Server) viewJob(w http.ResponseWriter, r *http.Request) {
 func (s *Server) apiGetPlaces(w http.ResponseWriter, r *http.Request) {
 	id, ok := getIDFromRequest(r)
 	if !ok {
-		renderJSON(w, http.StatusUnprocessableEntity, apiError{Code: http.StatusUnprocessableEntity, Message: "Invalid ID"})
+		renderJSON(w, http.StatusUnprocessableEntity, apiError{Code: http.StatusUnprocessableEntity, Message: invalidIDMessage})
 
 		return
 	}
@@ -702,7 +703,7 @@ func (s *Server) apiDeleteJob(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		apiError := apiError{
 			Code:    http.StatusUnprocessableEntity,
-			Message: "Invalid ID",
+			Message: invalidIDMessage,
 		}
 
 		renderJSON(w, http.StatusUnprocessableEntity, apiError)

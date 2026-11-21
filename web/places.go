@@ -138,6 +138,7 @@ func parsePlaces(r io.Reader) ([]Place, error) {
 		}
 
 		var addr completeAddress
+
 		_ = json.Unmarshal([]byte(get(row, "complete_address")), &addr)
 
 		places = append(places, Place{
