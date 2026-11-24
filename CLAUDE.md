@@ -49,3 +49,8 @@ Depois de abrir, explique a tela em três frases: digita o nicho e o bairro, os 
 ## Uso responsável
 
 Coletar dados do Google Maps de forma automática vai contra os termos de uso do Google. Se a pessoa pedir volume grande (centenas de buscas), avise do risco de bloqueio. Para abordar os contatos, lembre da LGPD: se identificar, dizer onde achou o contato e tirar da lista quem pedir.
+
+## Estado atual (24/11/2026)
+
+- CI verde na `main` desde o #1 (369d2c7): lint goconst/wsl corrigido e bump de Go 1.27.4, brotli, gorilla/websocket, klauspost/compress, x/net e x/crypto. O passo `make vuln` (govulncheck) quebra o CI sempre que sai vulnerabilidade nova na stdlib ou numa dependência; o matrix usa `1.27.x` pra pegar o patch mais novo do Go sozinho, dependência ainda pede `go get` na mão.
+- Repo é fork com remote `upstream` (gosom): `gh pr ...` sem `-R yagocoimbra/crono-scraper` resolve no upstream e não acha os PRs daqui.
